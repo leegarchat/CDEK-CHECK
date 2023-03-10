@@ -1,29 +1,17 @@
 Main_1() {
-    [ -f "./TMP_CDEK_SCRIPT/complite.list" ] && {
-        complite=$(cat ./TMP_CDEK_SCRIPT/complite.list)
-    } || {
-        echo -n "FFFFFFFFF" >./TMP_CDEK_SCRIPT/complite.list
-    }
-
     unset ttttt complite2 ttttt2
-    cour_nam=0
-    for x in $(echo -e "$text_input" | awk '{print $3}' | sort | uniq -d); do
-        case $x in
-        ПДЗ | пдз | Пдз | ПДз | ПдЗ | пДЗ | пдЗ | Отвал | ОТВАЛ | КБ3 | кб3 | ПВЗ | ГАЗ | Газ | газ)
-            others+="$x,"
-            ;;
-        *)
-            cour_nam=$((cour_nam + 1))
-            ;;
-        esac
-    done
-    others="${others%,*}"
+
     while true; do
         clear
         for f in {1..100}; do echo -e "\n"; done
         ttttt="${ttttt#*]}"
         clear
         echo "#################"
+        [ -f "./TMP_CDEK_SCRIPT/complite.list" ] && {
+            complite=$(cat ./TMP_CDEK_SCRIPT/complite.list)
+        } || {
+            echo -n "FFFFFFFFF" >./TMP_CDEK_SCRIPT/complite.list
+        }
         case $ttttt in
         1)
             echo -e "$text_input" | grep -Ev "$complite" | awk '{print NR") Не просканированна - "$3" "$1}'
@@ -34,6 +22,11 @@ Main_1() {
         4)
             [ -f "./TMP_CDEK_SCRIPT/complite.list" ] && {
                 rm -f "./TMP_CDEK_SCRIPT/complite.list"
+            }
+            [ -f "./TMP_CDEK_SCRIPT/complite.list" ] && {
+                complite=$(cat ./TMP_CDEK_SCRIPT/complite.list)
+            } || {
+                echo -n "FFFFFFFFF" >./TMP_CDEK_SCRIPT/complite.list
             }
             ;;
         3)
@@ -102,7 +95,7 @@ Main_1() {
             ;;
         esac
 
-        echo "Раскладка доставок до 12/14 на 09.03"
+        echo "$date_now"
         echo -e "\n\n 1 - Для просмотра не просканнированных\n 2 - Для просмотра просканированных\n 3 - Для просмотра по курьерам ($cour_nam курьеров + $others)\n 4 - Удалить лист просканированных накладных\n 9 - Выход\n\n   Либо ввод любого другого числа для поиска\n\n"
         if [ -f "./TMP_CDEK_SCRIPT/Local_SHA_list" ] && [ -f "./TMP_CDEK_SCRIPT/cloud_SHA_list" ]; then
             Local_list=$(
@@ -116,12 +109,13 @@ Main_1() {
             [ "$Local_list" = "$cloud_list" ] || {
                 clear
                 echo -e "  - Требуется обновления списка. Нажмите enter для продолжения"
+                echo "1:$cloud_list"
+                echo "2:$Local_list"
                 read
                 Read_text
             }
         fi
-
-        echo -e "$text_input" | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/Local_SHA_list
+        sha256sum ./TMP_CDEK_SCRIPT/list.txt | awk '{print $1}' >./TMP_CDEK_SCRIPT/Local_SHA_list
         curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/cloud_SHA_list &
         read ttttt
     done
@@ -177,8 +171,8 @@ Update_script_check() {
 }
 Read_text() {
     DOT=""
-    export text_input="$(curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt)" &
-    while ps aux | grep -v grep | grep 'curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt' >/dev/null; do
+    curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt >./TMP_CDEK_SCRIPT/list.txt &
+    while ps aux | grep 'curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt' >/dev/null; do
         [ "$DOT" = "..." ] && {
             DOT=""
         } || {
@@ -188,6 +182,20 @@ Read_text() {
         echo "  - Загрузка списка подождите$DOT"
         sleep 0.5
     done
+    text_input="$(cat ./TMP_CDEK_SCRIPT/list.txt)"
+    cour_nam=0
+    for x in $(echo -e "$text_input" | awk '{print $3}' | sort | uniq -d); do
+        case $x in
+        ПДЗ | пдз | Пдз | ПДз | ПдЗ | пДЗ | пдЗ | Отвал | ОТВАЛ | КБ3 | кб3 | ПВЗ | ГАЗ | Газ | газ)
+            others+="$x,"
+            ;;
+        *)
+            cour_nam=$((cour_nam + 1))
+            ;;
+        esac
+    done
+    date_now=$(curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/date_list.txt)
+    others="${others%,*}"
 }
 mkdir -p TMP_CDEK_SCRIPT
 Update_script_check
