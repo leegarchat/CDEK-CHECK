@@ -112,6 +112,8 @@ Update_script_check(){
     wait ; clear
     Local_script=$(cat ./TMP_CDEK_SCRIPT/Local_script ; rm -f ./TMP_CDEK_SCRIPT/Local_script) ; cloud_script=$(cat ./TMP_CDEK_SCRIPT/cloud_script ; rm -f ./TMP_CDEK_SCRIPT/cloud_script)
     [ "$Local_script" = "$cloud_script" ] || {
+        echo "1:$Local_script"
+        echo "2:$cloud_script"
         clear ; echo -e "  - Требуется обновления скрипта. Нажмите enter для продолжения" ; read
         echo "  - Обновление скрипта"
         curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/script.sh > "$0"
