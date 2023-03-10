@@ -1,5 +1,3 @@
-
-
 Main_1(){
     Read_text
     complite=FFFFFFFFF ; unset ttttt complite2 ttttt2
@@ -92,11 +90,9 @@ Main_1(){
     done
 }
 Update_script_check(){
-    DOT=""
-    {
-        Local_script="$(sha256sum $0 | awk '{print $1}')"
-        cloud_script="$(curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/script.sh | sha256sum | awk '{print $1}')"
-    } &
+    DOT="" ; tick=0
+        sha256sum $0 | awk '{print $1}' >./TMP_CDEK_SCRIPT/Local_script
+        curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/script.sh | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/cloud_script &
     while ps aux | grep -v grep | grep -E 'curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt|sha256sum|awk {print $1}' > /dev/null; do
         [ "$DOT" = "..." ] && {
             DOT=""
@@ -106,7 +102,23 @@ Update_script_check(){
         clear
         echo "  - Проверка обновления скрипта в облаке$DOT"
         sleep 0.5
+        tick=$((tick + 1))
+        [ "$tick" = "120" ] && {
+            clear
+            echo -e "  - Время ожидание истекло\n  - Нажмите enter для выхода..."
+            read ; exit 1
+        }
     done
+    wait ; clear
+    Local_script=$(cat ./TMP_CDEK_SCRIPT/Local_script ; rm -f ./TMP_CDEK_SCRIPT/Local_script) ; cloud_script=$(cat ./TMP_CDEK_SCRIPT/cloud_script ; rm -f ./TMP_CDEK_SCRIPT/cloud_script)
+    [ "$Local_script" = "$cloud_script" ] || {
+        clear ; echo -e "  - Требуется обновления скрипта. Нажмите enter для продолжения" ; read
+        echo "  - Обновление скрипта"
+        curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/script.sh > "$0"
+        echo "  - Завершено! Перезапустите скрипт"
+        exit 1
+        
+    }
 }
 Read_text(){
     DOT=""
@@ -122,7 +134,5 @@ Read_text(){
         sleep 0.5
     done
 }
-
-Main_1
-
-
+mkdir -p TMP_CDEK_SCRIPT
+Update_script_check
