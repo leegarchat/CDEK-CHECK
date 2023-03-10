@@ -91,7 +91,7 @@ Main_1(){
 }
 Update_script_check(){
     DOT="" ; tick=0
-        sha256sum $0 | awk '{print $1}' >./TMP_CDEK_SCRIPT/Local_script
+        cat "$0" | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/Local_script
         curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/script.sh | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/cloud_script &
     while ps aux | grep -v grep | grep -E 'curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt|sha256sum|awk {print $1}' > /dev/null; do
         [ "$DOT" = "..." ] && {
