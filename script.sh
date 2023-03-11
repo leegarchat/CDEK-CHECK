@@ -125,7 +125,7 @@ Update_script_check() {
     tick=0
     cat "$0" | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/Local_script
     curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/script.sh | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/cloud_script &
-    while ps $while_ps | grep -qE "$shile_grep2"; do #| grep -E 'curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt|sha256sum|awk {print $1}' >/dev/null; do
+    while ps $while_ps | grep -qE "$shile_grep2" &>/dev/null; do #| grep -E 'curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt|sha256sum|awk {print $1}' >/dev/null; do
         [ "$DOT" = "..." ] && {
             DOT=""
         } || {
@@ -172,7 +172,7 @@ Update_script_check() {
 Read_text() {
     DOT=""
     curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt >./TMP_CDEK_SCRIPT/list.txt &
-    while ps $while_ps | grep "$while_grep"; do
+    while ps $while_ps | grep "$while_grep" &>/dev/null; do
         [ "$DOT" = "..." ] && {
             DOT=""
         } || {
