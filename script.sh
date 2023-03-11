@@ -186,7 +186,7 @@ Read_text() {
         sleep 0.5
     done
     wait
-    text_input="$(cat ./TMP_CDEK_SCRIPT/list.txt)"
+    text_input="$(cat ./TMP_CDEK_SCRIPT/list.txt | awk 'NR > 1 {print}')"
     cour_nam=0
     for x in $(echo -e "$text_input" | awk '{print $3}' | sort | uniq -d); do
         case $x in
@@ -198,7 +198,7 @@ Read_text() {
             ;;
         esac
     done
-    date_now=$(curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/date_list.txt)
+    date_now=$(cat ./TMP_CDEK_SCRIPT/list.txt | awk 'NR <= 1 {print}')
     others="${others%,*}"
 }
 # if [ "$(uname -m)" = "x86_64" ]; then
