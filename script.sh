@@ -125,7 +125,7 @@ Update_script_check() {
     tick=0
     cat "$0" | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/Local_script
     curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/script.sh | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/cloud_script &
-    while ps aux | grep -v grep | grep -E 'curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt|sha256sum|awk {print $1}' >/dev/null; do
+    while ps $while_ps | grep -qE "$shile_grep2"; do #| grep -E 'curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt|sha256sum|awk {print $1}' >/dev/null; do
         [ "$DOT" = "..." ] && {
             DOT=""
         } || {
@@ -172,7 +172,7 @@ Update_script_check() {
 Read_text() {
     DOT=""
     curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt >./TMP_CDEK_SCRIPT/list.txt &
-    while ps aux | grep 'curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt' >/dev/null; do
+    while ps $while_ps | grep "$while_grep"; do
         [ "$DOT" = "..." ] && {
             DOT=""
         } || {
@@ -182,6 +182,7 @@ Read_text() {
         echo "  - Загрузка списка подождите$DOT"
         sleep 0.5
     done
+    wait
     text_input="$(cat ./TMP_CDEK_SCRIPT/list.txt)"
     cour_nam=0
     for x in $(echo -e "$text_input" | awk '{print $3}' | sort | uniq -d); do
@@ -197,7 +198,16 @@ Read_text() {
     date_now=$(curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/date_list.txt)
     others="${others%,*}"
 }
-mkdir -p TMP_CDEK_SCRIPT
+if [ "$(uname -m)" = "x86_64" ]; then
+    while_ps="aux"
+    while_grep="curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt"
+    shile_grep2="curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/script.sh|awk|sha256sum"
+else
+    while_ps="-A"
+    while_grep="curl"
+    shile_grep2="curl|awk|sha256sum"
+fi
+mkdir -p TMP_CDEK_SCRIPT &>/dev/null
 Update_script_check
 Read_text
 Main_1
