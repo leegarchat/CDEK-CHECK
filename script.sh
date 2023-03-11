@@ -95,9 +95,7 @@ Main_1() {
             ;;
         esac
 
-        echo "$date_now"
-        echo -e "\n\n 1 - Для просмотра не просканнированных\n 2 - Для просмотра просканированных\n 3 - Для просмотра по курьерам ($cour_nam курьеров + $others)\n 4 - Удалить лист просканированных накладных\n 9 - Выход\n\n   Либо ввод любого другого числа для поиска\n\n"
-        if [ -f "./TMP_CDEK_SCRIPT/Local_SHA_list" ] && [ -f "./TMP_CDEK_SCRIPT/cloud_SHA_list" ]; then
+        if [ -f "./TMP_CDEK_SCRIPT/Local_SHA_list" ] && [ -f "./TMP_CDEK_SCRIPT/cloud_SHA_list" ] && [ -n "$(cat ./TMP_CDEK_SCRIPT/cloud_SHA_list)" ]; then
             Local_list=$(
                 cat ./TMP_CDEK_SCRIPT/Local_SHA_list
                 rm -f ./TMP_CDEK_SCRIPT/Local_SHA_list
@@ -107,14 +105,19 @@ Main_1() {
                 rm -f ./TMP_CDEK_SCRIPT/cloud_SHA_list
             )
             [ "$Local_list" = "$cloud_list" ] || {
-                clear
-                echo -e "  - Требуется обновления списка. Нажмите enter для продолжения"
-                echo "1:$cloud_list"
-                echo "2:$Local_list"
-                read
+                sss="read"
+                while ! [ -z "$sss" ]; do
+                    clear
+                    echo -e "  - Требуется обновления списка. Нажмите enter для продолжения"
+                    echo "1:$Local_list"
+                    echo "2:'$cloud_list'"
+                    read sss
+                done
                 Read_text
             }
         fi
+        echo "$date_now"
+        echo -e "\n\n 1 - Для просмотра не просканнированных\n 2 - Для просмотра просканированных\n 3 - Для просмотра по курьерам ($cour_nam курьеров + $others)\n 4 - Удалить лист просканированных накладных\n 9 - Выход\n\n   Либо ввод любого другого числа для поиска\n\n"
         sha256sum ./TMP_CDEK_SCRIPT/list.txt | awk '{print $1}' >./TMP_CDEK_SCRIPT/Local_SHA_list
         curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/cloud_SHA_list &
         read ttttt
@@ -125,7 +128,7 @@ Update_script_check() {
     tick=0
     cat "$0" | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/Local_script
     curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/script.sh | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/cloud_script &
-    while ps $while_ps | grep -qE "$shile_grep2" &>/dev/null; do #| grep -E 'curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt|sha256sum|awk {print $1}' >/dev/null; do
+    while ps $while_ps | grep -qE "$shile_grep2" &>/dev/null; do 
         [ "$DOT" = "..." ] && {
             DOT=""
         } || {
@@ -198,16 +201,16 @@ Read_text() {
     date_now=$(curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/date_list.txt)
     others="${others%,*}"
 }
-if [ "$(uname -m)" = "x86_64" ]; then
+# if [ "$(uname -m)" = "x86_64" ]; then
     while_ps="aux"
     while_grep="curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt"
     shile_grep2="curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/script.sh|awk|sha256sum"
-else
-    while_ps="-A"
-    while_grep="curl"
-    shile_grep2="curl|awk|sha256sum"
-fi
-mkdir -p TMP_CDEK_SCRIPT &>/dev/null
+# else
+#     while_ps="-A"
+#     while_grep="curl"
+#     shile_grep2="curl|awk|sha256sum"
+# fi
+[ -d TMP_CDEK_SCRIPT ] || mkdir -p TMP_CDEK_SCRIPT &>/dev/null
 Update_script_check
 Read_text
 Main_1
