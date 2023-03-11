@@ -128,23 +128,23 @@ Update_script_check() {
     tick=0
     cat "$0" | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/Local_script
     curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/script.sh | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/cloud_script &
-    while ps $while_ps | grep -qE "$shile_grep2" &>/dev/null; do 
-        [ "$DOT" = "..." ] && {
-            DOT=""
-        } || {
-            DOT+="."
-        }
-        clear
-        echo "  - Проверка обновления скрипта в облаке$DOT"
-        sleep 0.5
-        tick=$((tick + 1))
-        [ "$tick" = "120" ] && {
+        while ps aux | grep -v grep | grep -qE "curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/script.sh|sha256sum|awk" &>/dev/null; do
+            [ "$DOT" = "..." ] && {
+                DOT=""
+            } || {
+                DOT+="."
+            }
             clear
-            echo -e "  - Время ожидание истекло\n  - Нажмите enter для выхода..."
-            read
-            exit 1
-        }
-    done
+            echo "  - Проверка обновления скрипта в облаке$DOT"
+            sleep 0.5
+            tick=$((tick + 1))
+            [ "$tick" = "120" ] && {
+                clear
+                echo -e "  - Время ожидание истекло\n  - Нажмите enter для выхода..."
+                read
+                exit 1
+            }
+        done
     wait
     clear
     Local_script=$(
@@ -174,8 +174,10 @@ Update_script_check() {
 }
 Read_text() {
     DOT=""
-    curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt >./TMP_CDEK_SCRIPT/list.txt &
-    while ps $while_ps | grep "$while_grep" &>/dev/null; do
+    echo 1
+        curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt >./TMP_CDEK_SCRIPT/list.txt &
+    sleep 0.1
+    while ps aux | grep -v grep | grep 'curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt' ; do
         [ "$DOT" = "..." ] && {
             DOT=""
         } || {
@@ -201,15 +203,7 @@ Read_text() {
     date_now=$(cat ./TMP_CDEK_SCRIPT/list.txt | awk 'NR <= 1 {print}')
     others="${others%,*}"
 }
-# if [ "$(uname -m)" = "x86_64" ]; then
-    while_ps="aux"
-    while_grep="curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt"
-    shile_grep2="curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/script.sh|awk|sha256sum"
-# else
-#     while_ps="-A"
-#     while_grep="curl"
-#     shile_grep2="curl|awk|sha256sum"
-# fi
+
 [ -d TMP_CDEK_SCRIPT ] || mkdir -p TMP_CDEK_SCRIPT &>/dev/null
 Update_script_check
 Read_text
