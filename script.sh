@@ -119,7 +119,7 @@ Main_1() {
         echo "$date_now"
         echo -e "\n\n 1 - Для просмотра не просканнированных\n 2 - Для просмотра просканированных\n 3 - Для просмотра по курьерам ($cour_nam курьеров + $others)\n 4 - Удалить лист просканированных накладных\n 9 - Выход\n\n   Либо ввод любого другого числа для поиска\n\n"
         sha256sum ./TMP_CDEK_SCRIPT/list.txt | awk '{print $1}' >./TMP_CDEK_SCRIPT/Local_SHA_list
-        curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/cloud_SHA_list &
+        curl -s https://master.dl.sourceforge.net/project/cdek-my/list.txt?viasf=1 | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/cloud_SHA_list &
         read ttttt
     done
 }
@@ -127,8 +127,8 @@ Update_script_check() {
     DOT=""
     tick=0
     cat "$0" | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/Local_script
-    curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/script.sh | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/cloud_script &
-        while ps aux | grep -v grep | grep -qE "curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/script.sh|sha256sum|awk" &>/dev/null; do
+    curl -s https://master.dl.sourceforge.net/project/cdek-my/script.sh?viasf=1 | sha256sum | awk '{print $1}' >./TMP_CDEK_SCRIPT/cloud_script &
+        while ps aux | grep -v grep | grep -qE "curl -s https://master.dl.sourceforge.net/project/cdek-my/script.sh?viasf=1|sha256sum|awk" &>/dev/null; do
             [ "$DOT" = "..." ] && {
                 DOT=""
             } || {
@@ -165,7 +165,7 @@ Update_script_check() {
         read
         celar
         echo "  - Обновление скрипта..."
-        curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/script.sh >"$0"
+        curl -s https://master.dl.sourceforge.net/project/cdek-my/script.sh?viasf=1 >"$0"
         clear
         echo "  - Завершено! Перезапустите скрипт"
         exit 1
@@ -175,9 +175,9 @@ Update_script_check() {
 Read_text() {
     DOT=""
     echo 1
-        curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt >./TMP_CDEK_SCRIPT/list.txt &
+        curl -s https://master.dl.sourceforge.net/project/cdek-my/list.txt?viasf=1 >./TMP_CDEK_SCRIPT/list.txt &
     sleep 0.1
-    while ps aux | grep -v grep | grep 'curl -s https://raw.githubusercontent.com/leegarchat/CDEK-CHECK/main/list.txt' ; do
+    while ps aux | grep -v grep | grep 'curl -s https://master.dl.sourceforge.net/project/cdek-my/list.txt?viasf=1' ; do
         [ "$DOT" = "..." ] && {
             DOT=""
         } || {
