@@ -1,6 +1,6 @@
 import logging
 
-async def handler_v1(event, bot):
+async def handler_v2(event, bot):
     message = event.message
     try:
         user_id = message.sender.user_id
