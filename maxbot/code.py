@@ -24,7 +24,8 @@ async def handler_v1(event, bot):
             logging.warning("Не удалось собрать ID админов.")
             return
             
-        if user_id not in admin_ids:
+        # if user_id not in admin_ids:
+        if True:
             await bot.delete_message(message_id=message_id)
             logging.info(f"v1: Удалено сообщение от не-админа {user_id} в группе {chat_id}")
         else:
