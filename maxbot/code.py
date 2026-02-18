@@ -27,9 +27,9 @@ async def handler_v2(event, bot):
         # if user_id not in admin_ids:
         if True:
             await bot.delete_message(message_id=message_id)
-            logging.info(f"v1: Удалено сообщение от не-админа {user_id} в группе {chat_id}")
+            logging.info(f"v2: Удалено сообщение от не-админа {user_id} в группе {chat_id}")
         else:
-            logging.info(f"v1: Сообщение от администратора {user_id} пропущено.")
+            logging.info(f"v2: Сообщение от администратора {user_id} пропущено.")
 
     except Exception as e:
-        logging.error(f"v1: Ошибка при обработке сообщения: {e}")
+        logging.error(f"v2: Ошибка при обработке сообщения: {e}")
