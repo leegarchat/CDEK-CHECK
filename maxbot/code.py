@@ -1,8 +1,17 @@
 import logging
-import subprocess # <-- Добавили для работы с консолью Windows
+import subprocess
+import asyncio
 from maxapi.types import NewMessageLink
 from maxapi.enums.message_link_type import MessageLinkType
 
+
+async def cmd_unmute(event, bot, args):
+    if not args: return
+    logging.info(f"Выполняю /unmute для: {args}")
+
+async def trigger_keywords(event, bot, text):
+    if "правила" in text.lower(): return True 
+    return False
 
 async def filter_non_admins(event, bot):
     message = event.message
@@ -27,9 +36,9 @@ async def handle_media(event, bot, attachments):
     await filter_non_admins(event, bot)
 
 # ==========================================
-# 🌟 ГЛАВНАЯ ФУНКЦИЯ (ВЕРСИЯ 5)
+# 🌟 ГЛАВНАЯ ФУНКЦИЯ (ВЕРСИЯ 8 - ТЕРМИНАЛ)
 # ==========================================
-async def handler_v5(event, bot):
+async def handler_v8(event, bot):
     message = event.message
     
     try:
@@ -52,8 +61,6 @@ async def handler_v5(event, bot):
         attachments = []
 
     if text.startswith("/"):
-        
-        # Проверяем, админ ли это (чтобы обычные юзеры не могли убить сервер)
         admin_ids = []
         if not is_private:
             try:
@@ -65,6 +72,9 @@ async def handler_v5(event, bot):
         
         is_admin = is_private or (user_id in admin_ids)
 
+        # ---------------------------------------------------------
+        # КОМАНДЫ ДЛЯ АДМИНОВ
+        # ---------------------------------------------------------
         if text.strip() == "/check":
             if is_admin:
                 try:
@@ -74,28 +84,53 @@ async def handler_v5(event, bot):
                     pass
                 return
 
-        # ---------------------------------------------------------
-        # НОВЫЕ СЕКРЕТНЫЕ КОМАНДЫ ДЛЯ АДМИНИСТРИРОВАНИЯ СЕРВЕРА
-        # ---------------------------------------------------------
-        elif text.strip() == "/ps":
+        elif text.startswith("/sendcall"):
             if is_admin:
-                try:
-                    # Запрашиваем у Windows список процессов python. Используем cp866 для русской винды
-                    cmd_output = subprocess.check_output('tasklist | findstr python', shell=True, text=True, encoding='cp866', errors='replace')
+                parts = text.split(maxsplit=1)
+                if len(parts) < 2:
                     reply_link = NewMessageLink(type=MessageLinkType.REPLY, mid=message_id)
-                    await bot.send_message(chat_id=chat_id, text=f"🖥 Процессы Python на сервере:\n```\n{cmd_output}\n```", link=reply_link)
+                    await bot.send_message(chat_id=chat_id, text="Укажите команду: /sendcall <команда>", link=reply_link)
+                    return
+                
+                command = parts[1]
+                try:
+                    # Запускаем команду (shell=True означает, что работаем как в cmd)
+                    output = subprocess.check_output(
+                        command, 
+                        shell=True, 
+                        text=True, 
+                        encoding='cp866', 
+                        errors='replace',
+                        stderr=subprocess.STDOUT, # Захватываем текст ошибок
+                        timeout=15                # Защита от зависания бота
+                    )
+                    
+                    if not output.strip():
+                        output = "[Команда выполнена успешно, вывода нет]"
+                        
+                    # Обрезаем вывод, если он слишком огромный
+                    if len(output) > 3900:
+                        output = output[:3900] + "\n...[ВЫВОД ОБРЕЗАН]..."
+                        
+                    reply_link = NewMessageLink(type=MessageLinkType.REPLY, mid=message_id)
+                    await bot.send_message(chat_id=chat_id, text=f"💻 Ответ сервера:\n```text\n{output}\n```", link=reply_link)
+                    
+                except subprocess.TimeoutExpired:
+                    reply_link = NewMessageLink(type=MessageLinkType.REPLY, mid=message_id)
+                    await bot.send_message(chat_id=chat_id, text="⏱ Ошибка: команда выполнялась дольше 15 секунд и была прервана.", link=reply_link)
+                except subprocess.CalledProcessError as e:
+                    reply_link = NewMessageLink(type=MessageLinkType.REPLY, mid=message_id)
+                    await bot.send_message(chat_id=chat_id, text=f"❌ Команда завершилась с ошибкой (код {e.returncode}):\n```text\n{e.output}\n```", link=reply_link)
                 except Exception as e:
-                    await bot.send_message(chat_id=chat_id, text=f"Ошибка выполнения /ps: {e}")
-                return
+                    reply_link = NewMessageLink(type=MessageLinkType.REPLY, mid=message_id)
+                    await bot.send_message(chat_id=chat_id, text=f"⚠️ Системная ошибка: {e}", link=reply_link)
+            return
 
-        elif text.strip() == "/killall":
-            if is_admin:
-                reply_link = NewMessageLink(type=MessageLinkType.REPLY, mid=message_id)
-                await bot.send_message(chat_id=chat_id, text="💀 Запускаю очистку клонов. Ухожу в рестарт, вернусь через 5 секунд...", link=reply_link)
-                # Команда убивает ВСЕ процессы python.exe мгновенно
-                subprocess.Popen('taskkill /F /IM python.exe', shell=True)
-                return
-        # ---------------------------------------------------------
+        elif text.startswith("/unmute"):
+            parts = text.split(maxsplit=1)
+            args = parts[1] if len(parts) > 1 else ""
+            await cmd_unmute(event, bot, args)
+            return
 
         if not is_private:
             await filter_non_admins(event, bot)
@@ -104,7 +139,11 @@ async def handler_v5(event, bot):
     if attachments:
         await handle_media(event, bot, attachments)
         return 
-
+        
+    if text:
+        is_keyword = await trigger_keywords(event, bot, text)
+        if is_keyword:
+            return
             
     if text and not is_private:
         await filter_non_admins(event, bot)
