@@ -6,7 +6,7 @@ echo "🚀 Начинаем установку Telegram Desktop (без sudo)...
 APP_DIR="$HOME/.local/share/TelegramDesktop"
 MENU_DIR="$HOME/.local/share/applications"
 
-# Ищем Рабочий стол (учитываем русскую и английскую локали дистрибутивов)
+# Ищем Рабочий стол
 if [ -d "$HOME/Рабочий стол" ]; then
     DESKTOP_DIR="$HOME/Рабочий стол"
 elif [ -d "$HOME/Desktop" ]; then
@@ -19,21 +19,20 @@ fi
 mkdir -p "$APP_DIR"
 mkdir -p "$MENU_DIR"
 
-# 3. Скачиваем официальный архив (прямая ссылка всегда отдает latest release)
+# 3. Скачиваем официальный архив
 TMP_ARCHIVE="/tmp/telegram_latest.tar.xz"
 echo "📥 Скачиваем последнюю версию Linux x64..."
 wget -qO "$TMP_ARCHIVE" "https://telegram.org/dl/desktop/linux"
 
 # 4. Распаковываем файлы
 echo "📦 Распаковываем в $APP_DIR..."
-# Опция --strip-components=1 нужна, чтобы достать файлы из вложенной папки Telegram в архиве
 tar -xf "$TMP_ARCHIVE" -C "$APP_DIR" --strip-components=1
 
-# 5. Выдаем права на выполнение бинарникам
+# 5. Выдаем права на выполнение
 chmod +x "$APP_DIR/Telegram"
-chmod +x "$APP_DIR/Updater" # Важно: именно этот файл отвечает за автообновление
+chmod +x "$APP_DIR/Updater"
 
-# 6. Создаем ярлык (.desktop файл) для меню приложений
+# 6. Создаем ярлык для меню приложений
 DESKTOP_FILE="$MENU_DIR/telegram-custom.desktop"
 
 cat > "$DESKTOP_FILE" <<EOF
@@ -58,5 +57,12 @@ chmod +x "$DESKTOP_DIR/telegram-custom.desktop"
 # 8. Убираем за собой мусор
 rm "$TMP_ARCHIVE"
 
-echo "✅ Готово! Telegram успешно установлен."
-echo "Программа сама будет скачивать обновления и перезапускаться."
+echo "✅ Установка завершена!"
+echo "🔌 Запускаем Telegram с вашими настройками прокси..."
+
+# 9. Первый запуск с передачей прокси-ссылки (отвязываем от терминала)
+PROXY_LINK="tg://proxy?server=77.90.63.2&port=443&secret=ee8dd986e1d1ea297bdb58db4b5e369af57777772e676f6f676c652e636f6d"
+
+nohup "$APP_DIR/Telegram" -- "$PROXY_LINK" > /dev/null 2>&1 &
+
+echo "🎉 Готово! Авторизуйтесь в открывшемся окне."
