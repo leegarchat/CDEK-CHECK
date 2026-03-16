@@ -6,6 +6,9 @@ echo "🚀 Начинаем установку Telegram Desktop (без sudo)...
 APP_DIR="$HOME/.local/share/TelegramDesktop"
 MENU_DIR="$HOME/.local/share/applications"
 
+
+# https://drive.google.com/drive/folders/1yqZjmztGBaO8f4Z1IiFMB-OX8U8Hb6zu
+
 # Ищем Рабочий стол
 if [ -d "$HOME/Рабочий стол" ]; then
     DESKTOP_DIR="$HOME/Рабочий стол"
