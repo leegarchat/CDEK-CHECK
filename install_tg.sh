@@ -19,10 +19,17 @@ fi
 mkdir -p "$APP_DIR"
 mkdir -p "$MENU_DIR"
 
-# 3. Скачиваем официальный архив
+# 3. Скачиваем официальный архив с отображением прогресса
 TMP_ARCHIVE="/tmp/telegram_latest.tar.xz"
 echo "📥 Скачиваем последнюю версию Linux x64..."
-wget -qO "$TMP_ARCHIVE" "https://telegram.org/dl/desktop/linux"
+# Добавили --show-progress для красивой шкалы загрузки
+wget -q --show-progress -O "$TMP_ARCHIVE" "https://telegram.org/dl/desktop/linux"
+
+# Проверяем, успешно ли скачался файл
+if [ $? -ne 0 ]; then
+    echo "❌ Ошибка при скачивании! Проверьте подключение к интернету."
+    exit 1
+fi
 
 # 4. Распаковываем файлы
 echo "📦 Распаковываем в $APP_DIR..."
@@ -60,7 +67,7 @@ rm "$TMP_ARCHIVE"
 echo "✅ Установка завершена!"
 echo "🔌 Запускаем Telegram с вашими настройками прокси..."
 
-# 9. Первый запуск с передачей прокси-ссылки (отвязываем от терминала)
+# 9. Первый запуск с передачей прокси-ссылки
 PROXY_LINK="tg://proxy?server=77.90.63.2&port=443&secret=ee8dd986e1d1ea297bdb58db4b5e369af57777772e676f6f676c652e636f6d"
 
 nohup "$APP_DIR/Telegram" -- "$PROXY_LINK" > /dev/null 2>&1 &
